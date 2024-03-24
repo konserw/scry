@@ -4,8 +4,6 @@ import requests
 from bs4 import BeautifulSoup
 
 
-
-
 class Collection:
     def __init__(self, collection_id, name):
         self.collection_id = collection_id
@@ -53,8 +51,11 @@ class Collection:
         """
 
 
-if __name__ == '__main__':
-    search_list = Path("nowe.txt").read_text().splitlines() + Path("stare.txt").read_text().splitlines()
+def main():
+    search_list = []
+    for path in Path("__file__").parent.glob("*.txt"):
+        search_list += path.read_text().splitlines()
+
     roki = Collection("48069", "Roki")
     wiesiu = Collection("49774", "Wiesiu")
 
@@ -65,3 +66,7 @@ if __name__ == '__main__':
    {wiesiu.search_card_list(search_list)}
     </body></html>"""
     Path("./report.html").write_text(html_report)
+
+
+if __name__ == '__main__':
+    main()
