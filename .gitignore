@@ -1,4 +1,5 @@
 *.html
+*.csv
 *.txt
 .idea/
 
