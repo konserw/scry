@@ -1,3 +1,4 @@
+import csv
 from pathlib import Path
 
 import requests
@@ -53,18 +54,21 @@ class Collection:
 
 def main():
     search_list = []
-    for path in Path("__file__").parent.glob("*.txt"):
+    for path in Path.cwd().glob("*.txt"):
         search_list += path.read_text().splitlines()
 
-    roki = Collection("48069", "Roki")
-    wiesiu = Collection("49774", "Wiesiu")
+    collections = []
+    friends_path = Path.cwd() / "friends.csv"
+    friends_list = friends_path.read_text().splitlines()
+    reader = csv.reader(friends_list[1:], delimiter=',')
+    for row in reader:
+        collections.append(Collection(row[1], row[0]))
 
     print("\n\nSaving report to report.html")
-    html_report = f"""
-    <html><body>
-   {roki.search_card_list(search_list)}
-   {wiesiu.search_card_list(search_list)}
-    </body></html>"""
+    html_report = "<html><body>\n"
+    for collection in collections:
+        html_report += collection.search_card_list(search_list)
+    html_report += "\n</body></html>"
     Path("./report.html").write_text(html_report)
 
 
