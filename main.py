@@ -32,10 +32,10 @@ class Collection:
         print(f"Searching in {self.name}:", end="")
         #        self.found += self.search_card(search_list[0])
         #        return
-        pool = ProcessPool(nodes=8)
+        pool = ProcessPool(nodes=16)
         results = pool.amap(self.search_card, search_list)
         while not results.ready():
-            time.sleep(1)
+            time.sleep(0.5)
             print(".", end='')
 
         for r in results.get():
@@ -76,23 +76,8 @@ def process_file(path):
     return out
 
 
-def main():
-    search_list = set()
-    for path in Path.cwd().glob("*.txt"):
-        print(f"reading from {path}")
-        search_list.update(process_file(path))
-
-    #    search_list = ["Island", "Plains"]
-    collections = []
-    friends_path = Path.cwd() / "friends.csv"
-    friends_list = friends_path.read_text().splitlines()
-    reader = csv.reader(friends_list[1:], delimiter=',')
-    for row in reader:
-        collections.append(Collection(row[1], row[0]))
-
-    for collection in collections:
-        collection.search_card_list(search_list)
-    print("\n\nSaving report to report.html")
+def save_report(collections, report_name="report.html"):
+    print(f"\nSaving report to {report_name}")
     html_report = """
 <html>
 <head>
@@ -104,8 +89,34 @@ def main():
     for collection in collections:
         html_report += collection.get_html()
     html_report += "\n</body></html>"
-    Path("./report.html").write_text(html_report)
+
+    (Path.cwd() / report_name).write_text(html_report)
+
+
+def main(report_name="report.html", single_list=None, single_collection=None):
+    search_list = set()
+    if single_list:
+        search_list = process_file(Path.cwd() / single_list)
+    else:
+        for path in Path.cwd().glob("*.txt"):
+            print(f"reading from {path}")
+            search_list.update(process_file(path))
+
+    collections = []
+    if single_collection:
+        collections.append(single_collection)
+    else:
+        friends_path = Path.cwd() / "friends.csv"
+        friends_list = friends_path.read_text().splitlines()
+        reader = csv.reader(friends_list[1:], delimiter=',')
+        for row in reader:
+            collections.append(Collection(row[1], row[0]))
+
+    for collection in collections:
+        collection.search_card_list(search_list)
+    save_report(collections, report_name)
 
 
 if __name__ == '__main__':
-    main()
+    # moje = Collection("49772", "moje")
+    main("krak.html", "krak.txt")
